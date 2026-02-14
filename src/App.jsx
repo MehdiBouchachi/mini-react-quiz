@@ -50,7 +50,7 @@ export default function App() {
     return (
       <ResultScreen
         answers={answers}
-        questions={questions}
+        totalQuestions={totalQuestions}
         onReset={handleReset}
       />
     );
