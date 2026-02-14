@@ -1,4 +1,6 @@
-/* const questions = [
+import { useState } from "react";
+
+const questions = [
   {
     question: "What is React?",
     options: ["A library", "A framework", "A database"],
@@ -14,55 +16,128 @@
     options: ["JavaScript XML", "JavaScript Extension", "JSON XML"],
     correct: 0,
   },
-]; */
+];
 
 export default function App() {
+  const [current, setCurrent] = useState(0);
+  const [answers, setAnswers] = useState([]);
+
+  const totalQuestions = questions.length;
+  const isFinished = current === totalQuestions;
+  const question = questions[current];
+  const progress = (current / totalQuestions) * 100;
+
+  function handleSelect(index) {
+    const updated = [...answers];
+    updated[current] = index;
+    setAnswers(updated);
+  }
+
+  function handleNext() {
+    setCurrent((prev) => prev + 1);
+  }
+
+  function handlePrevious() {
+    setCurrent((prev) => prev - 1);
+  }
+
+  function handleReset() {
+    setCurrent(0);
+    setAnswers([]);
+  }
+
+  if (isFinished) {
+    return (
+      <ResultScreen
+        answers={answers}
+        totalQuestions={totalQuestions}
+        onReset={handleReset}
+      />
+    );
+  }
+
   return (
     <div className="container">
       <div className="card">
         <h1>Mini React Challenge</h1>
 
-        <p className="subtitle">Question 1 of 3</p>
+        <p className="subtitle">
+          Question {current + 1} of {totalQuestions}
+        </p>
 
         <div className="progress-bar">
-          <div className="progress-fill" style={{ width: "33%" }} />
+          <div className="progress-fill" style={{ width: `${progress}%` }} />
         </div>
 
-        <h2 className="question">What is React?</h2>
+        <h2 className="question">{question.question}</h2>
 
         <div className="options">
-          <button className="option">A library</button>
-
-          <button className="option">A framework</button>
-
-          <button className="option">A database</button>
+          {question.options.map((option, index) => (
+            <button
+              key={index}
+              className={`option ${
+                answers[current] === index ? "selected" : ""
+              }`}
+              onClick={() => handleSelect(index)}
+            >
+              {option}
+            </button>
+          ))}
         </div>
 
         <div className="controls">
-          <button className="btn-secondary">Previous</button>
+          <button
+            className="btn-secondary"
+            onClick={handlePrevious}
+            disabled={current === 0}
+          >
+            Previous
+          </button>
 
-          <button className="btn-primary">Next</button>
+          <button
+            className="btn-primary"
+            onClick={handleNext}
+            disabled={answers[current] === undefined}
+          >
+            {current === totalQuestions - 1 ? "Finish" : "Next"}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-export function ResultScreen() {
+function ResultScreen({ onReset, answers, totalQuestions }) {
+  const score = answers.filter(
+    (answer, i) => answer === questions[i]?.correct,
+  ).length;
+
+  const percentage = (score / totalQuestions) * 100;
+
+  function getLevel() {
+    if (percentage === 100) return "Advanced 🚀";
+    if (percentage >= 60) return "Intermediate ⚡";
+    return "Beginner 🌱";
+  }
   return (
     <div className="container">
       <div className="card result-card">
         <h1>Challenge Completed</h1>
+        <p className="subtitle">
+          You scored {score} out of {totalQuestions}
+        </p>
 
-        <p className="subtitle">You scored 3 out of 3</p>
-
-        <div className="score-ring" style={{ "--score": "100%" }}>
-          <div className="score-inner">3/3</div>
+        <div className="score-ring" style={{ "--score": `${percentage}%` }}>
+          <div className="score-inner">
+            {score}/{totalQuestions}
+          </div>
         </div>
 
-        <p className="level">Advanced 🚀</p>
+        <p className="level">{getLevel()}</p>
 
-        <button className="btn-primary">Retake Challenge</button>
+        <button className="btn-primary" onClick={onReset}>
+          Retake Challenge
+        </button>
       </div>
     </div>
   );
