@@ -65,45 +65,88 @@ export default function App() {
           Question {current + 1} of {totalQuestions}
         </p>
 
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${progress}%` }} />
-        </div>
+        <ProgressBar progress={progress} />
 
-        <h2 className="question">{question.question}</h2>
-
-        <div className="options">
-          {question.options.map((option, index) => (
-            <button
-              key={index}
-              className={`option ${
-                answers[current] === index ? "selected" : ""
-              }`}
-              onClick={() => handleSelect(index)}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+        <QuestionCard
+          question={question.question}
+          options={question.options}
+          selectedAnswer={answers[current]}
+          onSelect={handleSelect}
+        />
 
         <div className="controls">
-          <button
-            className="btn-secondary"
+          <Button
+            variant="secondary"
             onClick={handlePrevious}
             disabled={current === 0}
           >
             Previous
-          </button>
+          </Button>
 
-          <button
-            className="btn-primary"
+          <Button
+            variant="primary"
             onClick={handleNext}
             disabled={answers[current] === undefined}
           >
             {current === totalQuestions - 1 ? "Finish" : "Next"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
+  );
+}
+
+/* ======================
+   REUSABLE COMPONENTS
+====================== */
+
+function ProgressBar({ progress }) {
+  return (
+    <div className="progress-bar">
+      <div className="progress-fill" style={{ width: `${progress}%` }} />
+    </div>
+  );
+}
+
+function QuestionCard({ question, options, selectedAnswer, onSelect }) {
+  return (
+    <>
+      <h2 className="question">{question}</h2>
+
+      <div className="options">
+        {options.map((option, index) => (
+          <OptionButton
+            key={index}
+            selected={selectedAnswer === index}
+            onClick={() => onSelect(index)}
+          >
+            {option}
+          </OptionButton>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function OptionButton({ children, selected, onClick }) {
+  return (
+    <button
+      className={`option ${selected ? "selected" : ""}`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Button({ children, variant = "primary", ...props }) {
+  return (
+    <button
+      className={variant === "primary" ? "btn-primary" : "btn-secondary"}
+      {...props}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -119,6 +162,7 @@ function ResultScreen({ onReset, answers, totalQuestions }) {
     if (percentage >= 60) return "Intermediate ⚡";
     return "Beginner 🌱";
   }
+
   return (
     <div className="container">
       <div className="card result-card">
@@ -135,9 +179,7 @@ function ResultScreen({ onReset, answers, totalQuestions }) {
 
         <p className="level">{getLevel()}</p>
 
-        <button className="btn-primary" onClick={onReset}>
-          Retake Challenge
-        </button>
+        <Button onClick={onReset}>Retake Challenge</Button>
       </div>
     </div>
   );
